@@ -2,8 +2,6 @@
 
 This document provides context, rules, and guidelines for AI agents (like GitHub Copilot, Cursor, or Gemini) working on the `impc-api` codebase.
 
-## 🤖 Agent Role & Persona
-
 ## 🛠 Tech Stack
 - **Language**: Python 3.10+
 - **Data Handling**: `pandas` (primary output format for dataframes)
