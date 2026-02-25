@@ -26,7 +26,7 @@ This document provides context, rules, and guidelines for AI agents (like GitHub
 ### 1. Validation First
 - Always validate `core` and `fl` (field list) parameters using `CoreParamsValidator` in `impc_api/utils/validators.py`.
 - Validation should generally issue **Warnings** rather than raising Errors to avoid breaking user workflows, unless the request is physically impossible (e.g., unsupported download format).
-- Refer to `impc_api/utils/core_fields.json` when suggesting new fields or cores.
+- Refer to `impc_api/utils/core_fields.json` when suggesting new fields.
 
 ### 2. Jupyter Compatibility
 - Maintain compatibility with `ipykernel` and `notebook`.
@@ -63,7 +63,4 @@ pytest tests/test_solr_request.py
 
 ## 💡 Common Tasks
 - **Updating Allowed Fields**: Add the field name to the corresponding core list in `impc_api/utils/core_fields.json`.
-- **Adding a New Core**: 
-  1. Add the core name and its fields to `core_fields.json`.
-  2. Update any relevant documentation in `README.md`.
 - **Modifying Validation**: Edit `impc_api/utils/validators.py` and ensure `pydantic` models are updated.
