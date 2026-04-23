@@ -16,6 +16,10 @@ class RowsParamIgnored(Warning):
     """Warning raised when the row param is ignored"""
 
 
+class LargeRequestMemoryWarning(Warning):
+    """Warning raised when user triggers a large request without downloading in batches"""
+
+
 # custom exceptions
 class UnsupportedDownloadFormatError(Exception):
     """Exception raised when the format is not supported for download"""
