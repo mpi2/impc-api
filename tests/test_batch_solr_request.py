@@ -17,6 +17,7 @@ from impc_api.batch_solr_request import (
 from impc_api.utils.warnings import (
     RowsParamIgnored,
     UnsupportedDownloadFormatError,
+    LargeRequestMemoryWarning,
 )
 
 # When rows is passed to batch solr request, a warning is raised.
@@ -98,36 +99,21 @@ class TestBatchSolrRequest:
     # Test no download - large request
     # Set mock_solr_request to return a large numFound
     @pytest.mark.parametrize("mock_solr_request", [1000001], indirect=True)
-    # Parameter to test 4 cases: when user selects 'y','' or 'n','exit' upon large download warning.
-    @pytest.mark.parametrize(
-        "user_input,expected_outcome",
-        [("y", "continue"), ("", "continue"), ("n", "exit"), ("exit", "exit")],
-    )
     def test_batch_solr_request_download_false_large_request(
         self,
         core,
         common_params,
         capsys,
-        monkeypatch,
         mock_batch_to_df,
         mock_solr_request,
-        user_input,
-        expected_outcome,
     ):
-        # Monkeypatch the input() function with parametrized user input
-        monkeypatch.setattr("builtins.input", lambda _: user_input)
 
         # Set a batch_size for clarity
         batch_size = 500000
 
-        # When user types 'n' or 'exit', exit should be triggered.
-        if expected_outcome == "exit":
-            with pytest.raises(SystemExit):
-                batch_solr_request(
-                    core, params=common_params, download=False, batch_size=batch_size
-                )
-        else:
-            result = batch_solr_request(
+        # Raises LargeRequestMemoryWarning When user tries to request >= 1M rows without download=true
+        with pytest.warns(LargeRequestMemoryWarning):
+            batch_solr_request(
                 core, params=common_params, download=False, batch_size=batch_size
             )
 
@@ -140,19 +126,9 @@ class TestBatchSolrRequest:
         # Assertions for continue case
         assert f"Number of found documents: {num_found}" in captured.out
 
-        if expected_outcome == "continue":
-            assert (
-                "Your request might exceed the available memory. We suggest setting 'download=True' and reading the file in batches"
-                in captured.out
-            )
-            mock_batch_to_df.assert_called_with(
-                "test_core", {"start": 0, "rows": batch_size, "wt": "json"}, num_found
-            )
-
-        # Assertion for exit case
-        elif expected_outcome == "exit":
-            assert "Exiting gracefully" in captured.out
-            mock_batch_to_df.assert_not_called()
+        mock_batch_to_df.assert_called_with(
+            "test_core", {"start": 0, "rows": batch_size, "wt": "json"}, num_found
+        )
 
     # Test download - large request
     # Fixture mocking _batch_solr_generator
@@ -303,9 +279,6 @@ class TestBatchSolrRequest:
         # This test should ensure the request is formatted properly. Regardless of going to downloads or to _batch_to_df
         # Retrieve  num_found
         num_found = mock_solr_request.return_value[0]
-        # When download=False and numFound is > 1,000,001 we pass 'y' in this test case.
-        if not download_bool and num_found == 2000000:
-            monkeypatch.setattr("builtins.input", lambda _: "y")
 
         # Call test function
         # If download==True, create a temporary file and call with the path_to_download
@@ -321,6 +294,14 @@ class TestBatchSolrRequest:
                 download=download_bool,
                 filename=temp_file_fixture,
             )
+        elif num_found > 1000000:
+            with pytest.warns(LargeRequestMemoryWarning):
+                result = batch_solr_request(
+                    core,
+                    params=multiple_field_params,
+                    download=download_bool,
+                    batch_size=5000,
+                )
         else:
             # Otherwise, call without the path_to_download
             result = batch_solr_request(
@@ -362,11 +343,8 @@ class TestBatchSolrRequest:
             )
 
         # Otherwise, use the 'y' input at the start of the test and make sure the required function is executed.
-        if not download_bool and num_found == 2000000:
-            assert (
-                "Your request might exceed the available memory. We suggest setting 'download=True' and reading the file in batches"
-                in captured.out
-            )
+        if not download_bool and num_found > 1000000:
+
             # Check _batch_to_df was called with correct params
             mock_batch_to_df.assert_called_once_with(
                 core, multiple_field_params, num_found
@@ -377,9 +355,7 @@ class TestBatchSolrRequest:
             assert isinstance(result, pd.DataFrame) is True
 
     # Test the warning when params["rows"] is passed
-    @pytest.mark.filterwarnings(
-        "default::impc_api.utils.warnings.RowsParamIgnored"
-    )
+    @pytest.mark.filterwarnings("default::impc_api.utils.warnings.RowsParamIgnored")
     @pytest.mark.parametrize("mock_solr_request", [10000], indirect=True)
     def test_param_rows_warning(core, common_params, mock_solr_request):
         with pytest.warns(RowsParamIgnored):
