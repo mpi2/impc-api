@@ -106,7 +106,7 @@ def batch_solr_request(
     # If a request is too large, warn the user to use download=true.
     if num_results > 1000000 and not download:
         warnings.warn(
-            message="This request might exceed the available memory. We suggest setting 'download=True' and reading the resulting file in batches",
+            message="This request may exceed available memory. If the download fails, set 'download=True' and try again.",
             category=LargeRequestMemoryWarning,
         )
     return _batch_to_df(core, params, num_results)
