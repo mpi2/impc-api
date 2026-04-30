@@ -12,6 +12,7 @@ from impc_api.utils.warnings import (
     warning_config,
     RowsParamIgnored,
     UnsupportedDownloadFormatError,
+    LargeRequestMemoryWarning
 )
 from .solr_request import solr_request
 
@@ -101,26 +102,14 @@ def batch_solr_request(
         except Exception as e:
             raise Exception(f"An unexpected error occured:{e}")
 
-    # If the number of results is small enough and download is off, it's okay to show as df
-    if num_results < 1000000 and not download:
-        return _batch_to_df(core, params, num_results)
-
-    # If it's too big, warn the user and ask if they want to proceed.
-    else:
-        print(
-            "Your request might exceed the available memory. We suggest setting 'download=True' and reading the file in batches"
+    
+    # If a request is too large, warn the user to use download=true.
+    if num_results > 1000000 and not download:
+        warnings.warn(
+            message="This request may exceed available memory. If the download fails, set 'download=True' and try again.",
+            category=LargeRequestMemoryWarning,
         )
-        prompt = input(
-            "Do you wish to proceed anyway? press ('y' or enter to proceed) / type('n' or 'exit' to cancel)"
-        )
-        match prompt:
-            case "n" | "exit":
-                print("Exiting gracefully")
-                exit()
-            case "y" | "":
-                print("Fetching data...")
-                return _batch_to_df(core, params, num_results)
-
+    return _batch_to_df(core, params, num_results)
 
 # Helper batch_to_df
 def _batch_to_df(core, params, num_results):

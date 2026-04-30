@@ -125,7 +125,7 @@ print(url)
 
 Use `batch_solr_request` for:
 
-- Large queries (>100,000 rows)
+- Large queries (>1,000,000 rows)
 - Querying multiple items in a list
 - Downloading data in `json` or `csv` format.
 
@@ -137,7 +137,7 @@ For large queries you can choose between seeing them in a DataFrame or downloadi
 
 This will fetch your data using the API responsibly and return a Pandas DataFrame
 
-When your request is larger than recommended and you have not opted for downloading the data, a warning will be presented and you should follow the instructions to proceed.
+When your request is larger than recommended and you have not opted to download the data, a warning will be presented suggesting that you retry your request and download the data.
 
 ```python
 df = batch_solr_request(
