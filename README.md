@@ -45,6 +45,20 @@ num_found, df = solr_request(
 )
 ```
 
+By default, `solr_request` uses a 10 second request timeout. To use a different timeout, pass the optional `timeout` argument:
+
+```python
+num_found, df = solr_request(
+    core='genotype-phenotype',
+    params={
+        'q': '*:*',
+        'rows': 10,
+        'fl': 'marker_symbol,allele_symbol,parameter_stable_id'
+    },
+    timeout=30
+)
+```
+
 ## a. Facet request
 
 `solr_request` allows facet requests
