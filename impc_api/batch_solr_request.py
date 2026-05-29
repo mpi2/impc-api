@@ -1,6 +1,7 @@
 import json
 import warnings
 from pathlib import Path
+from typing import Any, Dict, Generator, Iterable, List, Union
 
 import pandas as pd
 import requests
@@ -19,9 +20,16 @@ from .solr_request import solr_request
 # Initialise warning config
 warning_config()
 
+BatchSolrChunk = Union[List[Dict[str, Any]], str]
+
+
 def batch_solr_request(
-    core, params, download=False, batch_size=5000, filename="batch_request"
-):
+    core: str,
+    params: Dict[str, Any],
+    download: bool = False,
+    batch_size: int = 5000,
+    filename: str = "batch_request",
+) -> pd.DataFrame:
     """Function for large API requests (>1,000,000 results). Fetches the data in batches and
     produces a Pandas DataFrame or downloads a file in json or csv formats.
 
@@ -112,7 +120,9 @@ def batch_solr_request(
     return _batch_to_df(core, params, num_results)
 
 # Helper batch_to_df
-def _batch_to_df(core, params, num_results):
+def _batch_to_df(
+    core: str, params: Dict[str, Any], num_results: int
+) -> pd.DataFrame:
     """Helper function to fetch data in batches and display them in a DataFrame
 
     Args:
@@ -150,7 +160,9 @@ def _batch_to_df(core, params, num_results):
         return pd.concat(chunks, ignore_index=True)
 
 
-def _batch_solr_generator(core, params, num_results):
+def _batch_solr_generator(
+    core: str, params: Dict[str, Any], num_results: int
+) -> Generator[BatchSolrChunk, None, None]:
     """Generator function to fetch results from the SOLR API in batches using pagination.
 
     Args:
@@ -194,7 +206,11 @@ def _batch_solr_generator(core, params, num_results):
 
 
 # File writer
-def _solr_downloader(params, filename, solr_generator):
+def _solr_downloader(
+    params: Dict[str, Any],
+    filename: Path,
+    solr_generator: Iterable[BatchSolrChunk],
+) -> None:
     """Function to write the data from the generator into the specified format.
     Supports json and csv only.
 
@@ -230,7 +246,7 @@ def _solr_downloader(params, filename, solr_generator):
 
 
 # File reader
-def _read_downloaded_file(filename: Path, request_format):
+def _read_downloaded_file(filename: Path, request_format: str) -> pd.DataFrame:
     """Wrapper for reading files into Pandas DataFrames
 
     Args:

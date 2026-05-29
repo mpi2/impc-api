@@ -1,6 +1,7 @@
 """Module for warnings and excepton utils"""
 
 import warnings
+from typing import Optional, Type, Union
 
 
 # Custom warnings
@@ -26,10 +27,16 @@ class UnsupportedDownloadFormatError(Exception):
 
 
 # Custom warning function
-def warning_config():
+def warning_config() -> None:
     """Customises formatting and filters for warnings"""
 
-    def custom_warning(message, category, filename, lineno, line=None):
+    def custom_warning(
+        message: Union[str, Warning],
+        category: Type[Warning],
+        filename: str,
+        lineno: int,
+        line: Optional[str] = None,
+    ) -> str:
         return f"{category.__name__}: {message}\n"
 
     warnings.formatwarning = custom_warning
