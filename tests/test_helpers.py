@@ -1,4 +1,10 @@
-def check_url_status_code_and_params(mock_response, expected_status_code, expected_core, expected_params):
+def check_url_status_code_and_params(
+    mock_response,
+    expected_status_code,
+    expected_core,
+    expected_params,
+    expected_timeout=10,
+):
     """
     Check if the mocked response was called with the correct URL, core, and parameters.
 
@@ -13,6 +19,7 @@ def check_url_status_code_and_params(mock_response, expected_status_code, expect
     call_args = mock_response.call_args
     url = call_args[0][0]
     actual_params = call_args[1]["params"]
+    actual_timeout = call_args[1]["timeout"]
 
     # Verify that the mock was called
     mock_response.assert_called_once()
@@ -27,6 +34,7 @@ def check_url_status_code_and_params(mock_response, expected_status_code, expect
 
     # Check parameters
     assert actual_params == expected_params, "Mismatch in query parameters"
+    assert actual_timeout == expected_timeout, "Mismatch in request timeout"
 
     
 
