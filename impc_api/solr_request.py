@@ -1,3 +1,5 @@
+from typing import Any, Dict, Optional, Tuple, Union
+
 import pandas as pd
 import requests
 from IPython.display import display
@@ -5,12 +7,26 @@ from tqdm import tqdm
 
 from impc_api.utils.validators import CoreParamsValidator
 
+RequestTimeout = Union[float, Tuple[float, float]]
+SolrRequestResult = Optional[
+    Union[Tuple[int, pd.DataFrame], Tuple[Optional[str], None]]
+]
+
+DEFAULT_REQUEST_TIMEOUT: RequestTimeout = 10.0
+
 # Display the whole dataframe <15
 pd.set_option("display.max_rows", 15)
 pd.set_option("display.max_columns", None)
 
 # Create helper function
-def solr_request(core, params, silent=False, validate=False, url_only=False):
+def solr_request(
+    core: str,
+    params: Dict[str, Any],
+    silent: bool = False,
+    validate: bool = False,
+    url_only: bool = False,
+    timeout: RequestTimeout = DEFAULT_REQUEST_TIMEOUT,
+) -> SolrRequestResult:
     """Performs a single Solr request to the IMPC Solr API.
 
     Args:
@@ -24,6 +40,8 @@ def solr_request(core, params, silent=False, validate=False, url_only=False):
             if any parameter seems invalid.
         url_only (bool, optional): default False
             If true, returns the request URL but no data. 
+        timeout (int or float, optional): default 10
+            Number of seconds to wait for the API request before timing out.
 
 
     Returns:
@@ -80,7 +98,7 @@ def solr_request(core, params, silent=False, validate=False, url_only=False):
     base_url = "https://www.ebi.ac.uk/mi/impc/solr/"
     solr_url = base_url + core + "/select"
 
-    response = requests.get(solr_url, params=params)
+    response = requests.get(solr_url, params=params, timeout=timeout)
 
     if url_only:
         if response.status_code == 200:
@@ -124,7 +142,7 @@ def solr_request(core, params, silent=False, validate=False, url_only=False):
         print("Error:", response.status_code, response.text)
 
 
-def _process_faceting(data, params):
+def _process_faceting(data: Dict[str, Any], params: Dict[str, Any]) -> pd.DataFrame:
     """Processes the faceting data from an API response.
     Note: This function should not be used alone but only as a helper function for solr_request().
 
@@ -157,7 +175,9 @@ def _process_faceting(data, params):
 
 
 # Batch request based on solr_request.
-def batch_request(core, params, batch_size):
+def batch_request(
+    core: str, params: Dict[str, Any], batch_size: int
+) -> pd.DataFrame:
     """Calls `solr_request` multiple times with `params`
      to retrieve results in chunk `batch_size` rows at a time.
 
