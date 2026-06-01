@@ -1,7 +1,7 @@
 from unittest.mock import patch
 import pytest
 from impc_api.utils.warnings import InvalidCoreWarning, InvalidFieldWarning
-from solr_request import solr_request, _process_faceting
+from solr_request import DEFAULT_REQUEST_TIMEOUT, solr_request, _process_faceting
 from .test_helpers import check_url_status_code_and_params
 
 
@@ -303,6 +303,18 @@ class TestSolrRequest:
     @pytest.mark.parametrize(
         "mock_response", [_validation_response()], indirect=["mock_response"]
     )
+    def test_solr_request_custom_timeout(self, core, common_params, mock_response):
+        timeout = 2.5
+
+        _ = solr_request(
+            core=core, params=common_params, silent=True, timeout=timeout
+        )
+
+        assert mock_response.call_args[1]["timeout"] == timeout
+
+    @pytest.mark.parametrize(
+        "mock_response", [_validation_response()], indirect=["mock_response"]
+    )
     def test_solr_request_core_validation(self, common_params, mock_response):
         with pytest.warns(InvalidCoreWarning):
             _ = solr_request(core="invalid_core", params=common_params, validate=True)
@@ -377,6 +389,7 @@ class TestSolrRequest:
         )
         # Assert url is returned
         assert url == test_url, f"Expected URL {test_url}, got {url}"
+        assert mock_response_url.call_args[1]["timeout"] == DEFAULT_REQUEST_TIMEOUT
         captured = capsys.readouterr()
 
         # Assert test url is printed to console
@@ -402,8 +415,8 @@ class TestSolrRequest:
         )
         # Assert url is returned
         assert url is None, "Expected no URL to be returned"
+        assert mock_response_url.call_args[1]["timeout"] == DEFAULT_REQUEST_TIMEOUT
         captured = capsys.readouterr()
 
         # Assert test url is printed to console
         assert "Error" in captured.out, "Expected error message to be printed in console output"
-
