@@ -1,11 +1,13 @@
 [build-system]
-requires = ["setuptools"]
-build-backend = "setuptools.build_meta"
+requires = ["uv_build>=0.11.7,<0.12.0"]
+build-backend = "uv_build"
 
 [project]
 name = "impc_api"
 version = "1.0.7"
 description = "A package to facilitate making API requests to the IMPC Solr API"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
 authors = [
     { name = "MPI2" },
     { name = "Marina Kan" },
@@ -23,14 +25,13 @@ dependencies = [
 readme = "README.md"
 requires-python = ">=3.10"
 
-[project.optional-dependencies]
+[dependency-groups]
 dev = [
     "pytest>=8.2.2"
 ]
 
-[tool.setuptools.packages.find]
-include = ["impc_api", "impc_api.*"]
+[tool.uv.build-backend]
+module-root = ""
 
 [project.urls]
 "Homepage" = "https://github.com/mpi2/impc-api"
-
