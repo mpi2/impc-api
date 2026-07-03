@@ -45,6 +45,21 @@ uv build
 
 Local builds are only needed when checking packaging output; release builds are handled by the publish workflow.
 
+## Releasing a new version
+
+After changes have been merged to `main`, bump the package version with the appropriate command:
+
+```bash
+# Patch release for bug fixes or documentation-only changes
+uv version --bump patch
+
+# Minor release for backwards-compatible features
+uv version --bump minor
+
+# Major release for breaking changes
+uv version --bump major
+```
+
 ## Making changes after installation
 
 - Make changes to the `.py` modules as needed.
