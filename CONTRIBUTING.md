@@ -46,7 +46,7 @@ uv build
 ## Making changes after installation
 
 - Make changes to the `.py` modules as needed.
-- If there are dependency changes, update `pyproject.toml` and run `uv lock`.
+- If there are dependency changes, update `pyproject.toml`, run `uv lock` to update `uv.lock`, and run `uv sync` to install the updated dependencies in `.venv`.
 - Re-run tests with `uv run pytest`.
 - Rebuild distributions with `uv build --clear`.
 
