@@ -63,7 +63,7 @@ uv version --bump major
 ## Making changes after installation
 
 - Make changes to the `.py` modules as needed.
-- If there are dependency changes, update `pyproject.toml`, run `uv lock` to update `uv.lock`, and run `uv sync` to install the updated dependencies in `.venv`.
+- If there are dependency changes, update `pyproject.toml`, run `uv lock` to update `uv.lock`, commit both files, and run `uv sync` to install the updated dependencies in `.venv`.
 - Re-run tests with `uv run pytest`.
 
 - Your changes should have effect upon reloading the import of the package. For dependency changes, `uv sync` is sufficient to update the local environment.
