@@ -235,6 +235,7 @@ def _solr_downloader(
         elif params.get("wt") == "csv":
             first_chunk = True
             for chunk in solr_generator:
+                assert isinstance(chunk, str)
                 lines = chunk.splitlines()
                 if first_chunk:
                     # Write all lines in the first chunk
