@@ -45,7 +45,6 @@ def batch_solr_request(
 
     Returns:
         pd.DataFrame: if download=False, displays a DataFrame with the results.
-        None: if download=True, displays a statement on the console and returns None.
     """
 
     # If params["rows"] is passed, the user is warned about no effect
