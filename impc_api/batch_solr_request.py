@@ -1,7 +1,8 @@
 import json
 import warnings
+from collections.abc import Iterator
 from pathlib import Path
-from typing import Any, Dict, Generator, Iterable, List, Union
+from typing import Any, Dict, Iterable, List, Union
 
 import pandas as pd
 import requests
@@ -161,7 +162,7 @@ def _batch_to_df(
 
 def _batch_solr_generator(
     core: str, params: Dict[str, Any], num_results: int
-) -> Generator[BatchSolrChunk, None, None]:
+) -> Iterator[BatchSolrChunk]:
     """Generator function to fetch results from the SOLR API in batches using pagination.
 
     Args:
