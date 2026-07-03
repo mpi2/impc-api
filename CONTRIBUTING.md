@@ -43,11 +43,12 @@ To build the source distribution and wheel:
 uv build
 ```
 
+Local builds are only needed when checking packaging output; release builds are handled by the publish workflow.
+
 ## Making changes after installation
 
 - Make changes to the `.py` modules as needed.
 - If there are dependency changes, update `pyproject.toml`, run `uv lock` to update `uv.lock`, and run `uv sync` to install the updated dependencies in `.venv`.
 - Re-run tests with `uv run pytest`.
-- Rebuild distributions with `uv build --clear`.
 
-- Your changes should have effect upon reloading the import of the package. 
+- Your changes should have effect upon reloading the import of the package. For dependency changes, `uv sync` is sufficient to update the local environment.
