@@ -19,7 +19,7 @@ import json
 import warnings
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, KeysView, List
+from typing import Any, Collection, Dict, List
 
 from pydantic import BaseModel, model_validator, field_validator
 from impc_api.utils.warnings import (
@@ -46,7 +46,7 @@ class ValidationJson:
         with open(filename, "r") as f:
             return json.load(f)
 
-    def valid_cores(self) -> KeysView[str]:
+    def valid_cores(self) -> Collection[str]:
         return self._validation_json.keys()
 
     def valid_fields(self, core: str) -> List[str]:
