@@ -100,7 +100,7 @@ def batch_solr_request(
         except UnsupportedDownloadFormatError as e:
             raise e
         except Exception as e:
-            raise (f"An error ocurred while downloading the data:{e}")
+            raise Exception(f"An error ocurred while downloading the data:{e}")
 
             # Try to read the downloaded file
         try:
