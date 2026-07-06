@@ -8,6 +8,7 @@ This document provides context, rules, and guidelines for AI agents (like GitHub
 - **Networking**: `requests` (for API calls)
 - **Validation**: `pydantic` (for input/parameter validation)
 - **Testing**: `pytest`
+- **Packaging**: `uv` with the `uv_build` backend
 - **Progress Tracking**: `tqdm`
 - **Environment**: Optimized for Jupyter Notebooks/Lab
 
@@ -44,13 +45,16 @@ This document provides context, rules, and guidelines for AI agents (like GitHub
 ## ⌨️ Key Commands
 ```bash
 # Install for development
-pip install -e .[dev]
+uv sync
 
 # Run all tests
-pytest
+uv run pytest
 
 # Run a specific test file
-pytest tests/test_solr_request.py
+uv run pytest tests/test_solr_request.py
+
+# Build distributions
+uv build
 
 # Check linting (if configured)
 # Currently, the project uses standard Python conventions.

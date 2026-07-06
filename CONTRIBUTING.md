@@ -1,14 +1,14 @@
-# CONTRIBUTING.MD
+# Contributing
 
-## Dependencies:
-The package is build using [setuptools](https://setuptools.pypa.io/en/latest/userguide/quickstart.html) and [build](https://build.pypa.io/en/stable/installation.html).
-1. `pip install build` -- This installs setuptools automatically. 
+## Dependencies
+
+The package is built with [uv](https://docs.astral.sh/uv/) and uses the `uv_build` backend declared in `pyproject.toml`.
 
 ## Installing the package for use
-1. Clone the repository and navigate into it. Navigate into the package name until you can see `setup.py` and `pyproject.toml`
-2. Run `python3 -m build`, this builds the package, a couple of new files/folders will appear.
-3. Install the package running `pip install .`
-4. Try it out: Go to Jupyter Notebook and try:
+
+1. Clone the repository and navigate into it.
+2. Run `uv sync` to create the project environment and install the package.
+3. Try it out in Jupyter Notebook:
 
 
 ```
@@ -20,34 +20,50 @@ num_found, df = solr_request( core='genotype-phenotype', params={
     }
 )
 ```
+
 ## Installing the package for development
-We use [pytest](https://docs.pytest.org/en/stable/) for testing. To install in dev mode follow [stepts 1 and 2](#installing-the-package-for-use) above and then:
 
-3. Install the package running `pip install -e .`
-This should install `pytest` and enable you to run tests:
+We use [pytest](https://docs.pytest.org/en/stable/) for testing. The default `uv sync` includes the `dev` dependency group, which installs pytest.
 
-```
-pytest tests/
+```bash
+uv run pytest
 ```
 
-Alternatively, create a venv and install pytest to run tests without having to install the package in dev mode.
+To run a specific test file:
 
-
-## Making changes after installation 
-
-- Make the changes to the `.py` modules, if there are any **dependency** changes, change them in both `pyproject.toml` and `setup.py`
-- To clean previous builds, re-build and reinstall run these 3 commands:
+```bash
+uv run pytest tests/test_solr_request.py
 ```
-# Step 1: Clean previous builds
-rm -rf build dist *.egg-info
 
-# Step 2: Build the package
-python -m build
+## Building the package
 
-# Step 3: Reinstall the updated package
-pip install . --force-reinstall
+To build the source distribution and wheel:
 
+```bash
+uv build
 ```
-- Your changes should have effect upon reloading the import of the package. 
 
+Local builds are only needed when checking packaging output; release builds are handled by the publish workflow.
 
+## Releasing a new version
+
+After changes have been merged to `main`, bump the package version with the appropriate command:
+
+```bash
+# Patch release for bug fixes or documentation-only changes
+uv version --bump patch
+
+# Minor release for backwards-compatible features
+uv version --bump minor
+
+# Major release for breaking changes
+uv version --bump major
+```
+
+## Making changes after installation
+
+- Make changes to the `.py` modules as needed.
+- If there are dependency changes, update `pyproject.toml`, run `uv lock` to update `uv.lock`, commit both files, and run `uv sync` to install the updated dependencies in `.venv`.
+- Re-run tests with `uv run pytest`.
+
+- Your changes should have effect upon reloading the import of the package. For dependency changes, `uv sync` is sufficient to update the local environment.
