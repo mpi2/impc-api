@@ -19,7 +19,8 @@ import json
 import warnings
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import List, Dict
+from typing import Any, Collection, Dict, List
+
 from pydantic import BaseModel, model_validator, field_validator
 from impc_api.utils.warnings import (
     warning_config,
@@ -38,14 +39,14 @@ class ValidationJson:
     _validation_json: Dict[str, List[str]] = field(default_factory=dict, init=False)
 
     # Eager initialisation
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         self._validation_json = self.load_core_fields(self.CORE_FILE)
 
     def load_core_fields(self, filename: Path) -> Dict[str, List[str]]:
         with open(filename, "r") as f:
             return json.load(f)
 
-    def valid_cores(self):
+    def valid_cores(self) -> Collection[str]:
         return self._validation_json.keys()
 
     def valid_fields(self, core: str) -> List[str]:
@@ -59,11 +60,13 @@ def get_fields(fields: str) -> List[str]:
 
 class CoreParamsValidator(BaseModel):
     core: str
-    params: Dict
+    params: Dict[str, Any]
 
     @model_validator(mode="before")
     @classmethod
-    def validate_core_and_fields(cls, values):
+    def validate_core_and_fields(
+        cls: type["CoreParamsValidator"], values: Dict[str, Any]
+    ) -> Dict[str, Any]:
         invalid_core: bool = False
         core = values.get("core")
         params = values.get("params")
@@ -108,7 +111,7 @@ class DownloadFormatValidator(BaseModel):
     wt: str
 
     @field_validator("wt")
-    def validate_wt(cls, value):
+    def validate_wt(cls: type["DownloadFormatValidator"], value: str) -> str:
         supported_formats = {"json", "csv"}
         if value not in supported_formats:
             raise UnsupportedDownloadFormatError(
