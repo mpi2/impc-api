@@ -4,7 +4,7 @@ build-backend = "uv_build"
 
 [project]
 name = "impc_api"
-version = "1.0.7"
+version = "2.0.0"
 description = "A package to facilitate making API requests to the IMPC Solr API"
 license = "Apache-2.0"
 license-files = ["LICENSE"]
