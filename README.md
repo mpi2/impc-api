@@ -27,7 +27,7 @@ Create a [Jupyter Notebook](https://jupyter-notebook.readthedocs.io/en/latest/) 
 The available functions can be imported as:
 
 ```python
-from impc_api import solr_request, batch_solr_request
+from impc_api import batch_solr_request, get_core_fields, solr_request
 ```
 
 # 1. Solr request
@@ -225,3 +225,20 @@ df = batch_solr_request(
 )
 print(df.head())
 ```
+# 3.Get Core Fields
+
+## Retrieve valid fields for a core
+
+Use `get_core_fields` before constructing a request to discover the documented
+fields available for a public IMPC Solr core. The function uses the same source
+of truth as request validation and does not make a network request.
+
+```python
+from impc_api import get_core_fields
+
+get_core_fields("genotype-phenotype")
+```
+
+The complete list is returned. An unknown core returns an empty list. Skills and
+other integrations should call this function instead of maintaining their own
+copies of core field names.

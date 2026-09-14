@@ -16,6 +16,7 @@ This document provides context, rules, and guidelines for AI agents (like GitHub
 - `impc_api/`: Core package directory.
   - `solr_request.py`: Standard single-request logic.
   - `batch_solr_request.py`: Logic for large/chunked requests.
+  - `get_core_fields.py`: Public interface for retrieving the documented fields for a Solr core.
   - `utils/`:
     - `validators.py`: Pydantic models for core/field validation.
     - `core_fields.json`: Source of truth for valid Solr cores and their allowed fields.
@@ -27,7 +28,14 @@ This document provides context, rules, and guidelines for AI agents (like GitHub
 ### 1. Validation First
 - Always validate `core` and `fl` (field list) parameters using `CoreParamsValidator` in `impc_api/utils/validators.py`.
 - Validation should generally issue **Warnings** rather than raising Errors to avoid breaking user workflows, unless the request is physically impossible (e.g., unsupported download format).
-- Refer to `impc_api/utils/core_fields.json` when suggesting new fields.
+- Agents, skills, and other package consumers must retrieve allowed fields through the public API instead of hardcoding field lists:
+  ```python
+  from impc_api import get_core_fields
+
+  fields = get_core_fields("genotype-phenotype")
+  ```
+- `get_core_fields` returns the complete documented field list without making a network request. It returns an empty list for an unknown core.
+- `impc_api/utils/core_fields.json` remains the single source of truth. Edit it when maintaining core or field definitions; do not duplicate the lists in skills or documentation.
 
 ### 2. Jupyter Compatibility
 - Maintain compatibility with `ipykernel` and `notebook`.
@@ -67,4 +75,5 @@ uv build
 
 ## 💡 Common Tasks
 - **Updating Allowed Fields**: Add the field name to the corresponding core list in `impc_api/utils/core_fields.json`.
+- **Discovering Allowed Fields**: Call `get_core_fields(core)` through the package-level import rather than reading `core_fields.json` directly or hardcoding field names.
 - **Modifying Validation**: Edit `impc_api/utils/validators.py` and ensure `pydantic` models are updated.
