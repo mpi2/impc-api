@@ -13,6 +13,7 @@ SolrRequestResult = Optional[
 ]
 
 DEFAULT_REQUEST_TIMEOUT: RequestTimeout = 10.0
+DEFAULT_SOLR_BASE_URL = "https://www.ebi.ac.uk/mi/impc/solr/"
 
 # Display the whole dataframe <15
 pd.set_option("display.max_rows", 15)
@@ -26,6 +27,7 @@ def solr_request(
     validate: bool = False,
     url_only: bool = False,
     timeout: RequestTimeout = DEFAULT_REQUEST_TIMEOUT,
+    base_url: str = DEFAULT_SOLR_BASE_URL,
 ) -> SolrRequestResult:
     """Performs a single Solr request to the IMPC Solr API.
 
@@ -42,6 +44,8 @@ def solr_request(
             If true, returns the request URL but no data. 
         timeout (int or float, optional): default 10
             Number of seconds to wait for the API request before timing out.
+        base_url (str, optional): default public IMPC Solr endpoint.
+            Override this to use another compatible Solr deployment.
 
 
     Returns:
@@ -95,8 +99,7 @@ def solr_request(
     if validate:
         CoreParamsValidator(core=core, params=params)
 
-    base_url = "https://www.ebi.ac.uk/mi/impc/solr/"
-    solr_url = base_url + core + "/select"
+    solr_url = f"{base_url.rstrip('/')}/{core}/select"
 
     response = requests.get(solr_url, params=params, timeout=timeout)
 
@@ -176,7 +179,10 @@ def _process_faceting(data: Dict[str, Any], params: Dict[str, Any]) -> pd.DataFr
 
 # Batch request based on solr_request.
 def batch_request(
-    core: str, params: Dict[str, Any], batch_size: int
+    core: str,
+    params: Dict[str, Any],
+    batch_size: int,
+    base_url: str = DEFAULT_SOLR_BASE_URL,
 ) -> pd.DataFrame:
     """Calls `solr_request` multiple times with `params`
      to retrieve results in chunk `batch_size` rows at a time.
@@ -186,7 +192,8 @@ def batch_request(
     Args:
          core (str): name of IMPC solr core.
          params (dict): dictionary containing the API call parameters.
-         batch_size (int): Size of batches (number of docs) per request.
+        batch_size (int): Size of batches (number of docs) per request.
+        base_url (str, optional): default public IMPC Solr endpoint.
 
      Returns:
          pandas.DataFrame: Pandas.DataFrame object with the information requested.
@@ -208,7 +215,10 @@ def batch_request(
         )
     # Determine the total number of rows. Note that we do not request any data (rows = 0).
     num_results, _ = solr_request(
-        core=core, params={**params, "start": 0, "rows": 0}, silent=True
+        core=core,
+        params={**params, "start": 0, "rows": 0},
+        silent=True,
+        base_url=base_url,
     )
     # Initialise everything for data retrieval.
     start = 0
@@ -223,6 +233,7 @@ def batch_request(
                 core=core,
                 params={**params, "start": start, "rows": batch_size},
                 silent=True,
+                base_url=base_url,
             )
             # Record chunk.
             chunks.append(df_chunk)
