@@ -59,6 +59,17 @@ num_found, df = solr_request(
 )
 ```
 
+To use another compatible Solr deployment, override the base URL. The same
+argument is available on `batch_solr_request`:
+
+```python
+num_found, df = solr_request(
+    core='genotype-phenotype',
+    params={'q': '*:*', 'rows': 10},
+    base_url='http://solr-host:8983/solr',
+)
+```
+
 ## a. Facet request
 
 `solr_request` allows facet requests
