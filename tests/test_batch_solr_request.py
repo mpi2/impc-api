@@ -14,6 +14,7 @@ from impc_api.batch_solr_request import (
     _solr_downloader,
     _read_downloaded_file,
 )
+from impc_api.solr_request import DEFAULT_SOLR_BASE_URL
 from impc_api.utils.warnings import (
     RowsParamIgnored,
     UnsupportedDownloadFormatError,
@@ -85,6 +86,7 @@ class TestBatchSolrRequest:
             core=core,
             params={**common_params, "start": 0, "rows": 0, "wt": "json"},
             silent=True,
+            base_url=DEFAULT_SOLR_BASE_URL,
         )
 
         # Retrieve the numFound
@@ -127,7 +129,10 @@ class TestBatchSolrRequest:
         assert f"Number of found documents: {num_found}" in captured.out
 
         mock_batch_to_df.assert_called_with(
-            "test_core", {"start": 0, "rows": batch_size, "wt": "json"}, num_found
+            "test_core",
+            {"start": 0, "rows": batch_size, "wt": "json"},
+            num_found,
+            base_url=DEFAULT_SOLR_BASE_URL,
         )
 
     # Test download - large request
@@ -197,7 +202,7 @@ class TestBatchSolrRequest:
 
         # Check _batch_solr_generator gets called once with correct args
         mock_batch_solr_generator.assert_called_once_with(
-            core, params_format, num_found
+            core, params_format, num_found, base_url=DEFAULT_SOLR_BASE_URL
         )
 
         # Check _solr_downloader gets called once with correct args
@@ -320,7 +325,10 @@ class TestBatchSolrRequest:
         if download_bool:
             # Check _batch_solr_generator gets called with correct args
             mock_batch_solr_generator.assert_called_with(
-                core, multiple_field_params, num_found
+                core,
+                multiple_field_params,
+                num_found,
+                base_url=DEFAULT_SOLR_BASE_URL,
             )
 
             # Check _solr_downloader gets called once with correct args
@@ -347,7 +355,10 @@ class TestBatchSolrRequest:
 
             # Check _batch_to_df was called with correct params
             mock_batch_to_df.assert_called_once_with(
-                core, multiple_field_params, num_found
+                core,
+                multiple_field_params,
+                num_found,
+                base_url=DEFAULT_SOLR_BASE_URL,
             )
 
             # Check the function returns a dataframe
@@ -430,6 +441,7 @@ class TestHelpersSolrBatchRequest:
                 core=core,
                 params={**batch_params, "start": i * batch_size, "rows": batch_size},
                 silent=True,
+                base_url=DEFAULT_SOLR_BASE_URL,
             )
             for i in range(5)
         ]
