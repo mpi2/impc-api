@@ -1,7 +1,11 @@
 from unittest.mock import patch
 import pytest
 from impc_api.utils.warnings import InvalidCoreWarning, InvalidFieldWarning
-from solr_request import DEFAULT_REQUEST_TIMEOUT, solr_request, _process_faceting
+from solr_request import (
+    DEFAULT_REQUEST_TIMEOUT,
+    solr_request,
+    _process_faceting,
+)
 from .test_helpers import check_url_status_code_and_params
 
 
@@ -311,6 +315,21 @@ class TestSolrRequest:
         )
 
         assert mock_response.call_args[1]["timeout"] == timeout
+
+    @pytest.mark.parametrize(
+        "mock_response", [_validation_response()], indirect=["mock_response"]
+    )
+    def test_solr_request_custom_base_url(self, core, common_params, mock_response):
+        solr_request(
+            core=core,
+            params=common_params,
+            silent=True,
+            base_url="http://internal.example/solr",
+        )
+
+        assert mock_response.call_args[0][0] == (
+            "http://internal.example/solr/test_core/select"
+        )
 
     @pytest.mark.parametrize(
         "mock_response", [_validation_response()], indirect=["mock_response"]

@@ -16,7 +16,7 @@ from impc_api.utils.warnings import (
     UnsupportedDownloadFormatError,
     LargeRequestMemoryWarning
 )
-from .solr_request import solr_request
+from .solr_request import DEFAULT_SOLR_BASE_URL, solr_request
 
 # Initialise warning config
 warning_config()
@@ -30,6 +30,7 @@ def batch_solr_request(
     download: bool = False,
     batch_size: int = 5000,
     filename: str = "batch_request",
+    base_url: str = DEFAULT_SOLR_BASE_URL,
 ) -> pd.DataFrame:
     """Function for large API requests (>1,000,000 results). Fetches the data in batches and
     produces a Pandas DataFrame or downloads a file in json or csv formats.
@@ -42,6 +43,8 @@ def batch_solr_request(
         download (bool, optional): True for download a local file, False to display results as a DataFrame. Defaults to False.
         batch_size (int, optional): Size of batches to fetch the data. Defaults to 5000.
         filename (str, optional): When download=True, select the name of the file. Defaults to 'batch_request'.
+        base_url (str, optional): default public IMPC Solr endpoint.
+            Override this to use another compatible Solr deployment.
 
 
     Returns:
@@ -81,7 +84,10 @@ def batch_solr_request(
 
     # Determine the total number of rows. Note that we do not request any data (rows = 0).
     num_results, _ = solr_request(
-        core=core, params={**params, "start": 0, "rows": 0, "wt": "json"}, silent=True
+        core=core,
+        params={**params, "start": 0, "rows": 0, "wt": "json"},
+        silent=True,
+        base_url=base_url,
     )
     print(f"Number of found documents: {num_results}")
 
@@ -95,7 +101,7 @@ def batch_solr_request(
             # Implement loop behaviour
             print("Downloading file...")
             filename_path = Path(f"{filename}.{params['wt']}")
-            gen = _batch_solr_generator(core, params, num_results)
+            gen = _batch_solr_generator(core, params, num_results, base_url=base_url)
             _solr_downloader(params, filename_path, gen)
             print(f"File saved as: {filename_path}")
         except UnsupportedDownloadFormatError as e:
@@ -117,11 +123,14 @@ def batch_solr_request(
             message="This request may exceed available memory. If the download fails, set 'download=True' and try again.",
             category=LargeRequestMemoryWarning,
         )
-    return _batch_to_df(core, params, num_results)
+    return _batch_to_df(core, params, num_results, base_url=base_url)
 
 # Helper batch_to_df
 def _batch_to_df(
-    core: str, params: Dict[str, Any], num_results: int
+    core: str,
+    params: Dict[str, Any],
+    num_results: int,
+    base_url: str = DEFAULT_SOLR_BASE_URL,
 ) -> pd.DataFrame:
     """Helper function to fetch data in batches and display them in a DataFrame
 
@@ -147,6 +156,7 @@ def _batch_to_df(
                 core=core,
                 params={**params, "start": start, "rows": batch_size},
                 silent=True,
+                base_url=base_url,
             )
 
             # Update progress bar with the number of rows requested.
@@ -161,7 +171,10 @@ def _batch_to_df(
 
 
 def _batch_solr_generator(
-    core: str, params: Dict[str, Any], num_results: int
+    core: str,
+    params: Dict[str, Any],
+    num_results: int,
+    base_url: str = DEFAULT_SOLR_BASE_URL,
 ) -> Iterator[BatchSolrChunk]:
     """Generator function to fetch results from the SOLR API in batches using pagination.
 
@@ -176,8 +189,7 @@ def _batch_solr_generator(
     Yields:
         ([dict, str]): A JSON object or plain text with the results.
     """
-    base_url = "https://www.ebi.ac.uk/mi/impc/solr/"
-    solr_url = base_url + core + "/select"
+    solr_url = f"{base_url.rstrip('/')}/{core}/select"
     start = params["start"]
     batch_size = params["rows"]
 
