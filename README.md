@@ -4,7 +4,8 @@
 
 ## Installation Instructions
 
-0. Ensure that Python is installed on your system. The minimum required version is 3.10.
+0. Ensure that Python is installed on your system. The minimum required version is 3.12.
+   Python 3.10 will not be supported after version 2.0.0.
 
 1. **Create a virtual environment (optional but recommended)**:
 On Mac or Linux:
