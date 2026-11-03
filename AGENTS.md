@@ -3,7 +3,7 @@
 This document provides context, rules, and guidelines for AI agents (like GitHub Copilot, Cursor, or Gemini) working on the `impc-api` codebase.
 
 ## 🛠 Tech Stack
-- **Language**: Python 3.10+
+- **Language**: Python 3.12+
 - **Data Handling**: `pandas` (primary output format for dataframes)
 - **Networking**: `requests` (for API calls)
 - **Validation**: `pydantic` (for input/parameter validation)
